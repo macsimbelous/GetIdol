@@ -315,11 +315,11 @@ namespace GetIdol
         static List<int> ParseHTML_sankaku(string html)
         {
             List<int> temp = new List<int>();
-            Regex rx = new Regex("Post.register\\((.*?)\\);", RegexOptions.Compiled);
+            Regex rx = new Regex(@"PostModeMenu\.click\([0-9]*\)", RegexOptions.Compiled);
             MatchCollection matches = rx.Matches(html);
             foreach (Match match in matches)
             {
-                string json = match.Value.Substring(14, match.Value.Length - 16);
+                string json = match.Value.Substring(19, match.Value.Length - 20);
                 //json = json.Remove(json.Length-2);
                 ImageInfo img = parse_json_one_sankaku(json);
                 if (img.sankaku_post_id == 0) { continue; }
