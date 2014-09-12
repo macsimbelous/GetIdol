@@ -61,7 +61,7 @@ namespace GetIdol
             Stream rStream = null;
             try
             {
-                httpWRQ.Referer = "http://chan.sankakucomplex.com/post/show/" + post_id.ToString();
+                httpWRQ.Referer = "https://idol.sankakucomplex.com/post/show/" + post_id.ToString();
                 httpWRQ.UserAgent = UserAgent;
                 httpWRQ.Accept = "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8";
                 httpWRQ.Headers.Add("Accept-Encoding: identity");
@@ -139,7 +139,7 @@ namespace GetIdol
         }
         static string GetPostPage(int npost, CookieCollection cookies)
         {
-            string strURL = "http://chan.sankakucomplex.com/post/show/" + npost.ToString();
+            string strURL = "https://idol.sankakucomplex.com/post/show/" + npost.ToString();
             Console.WriteLine("Загружаем и парсим пост: " + strURL);
             //WebClient Client = new WebClient();
             //Uri uri = new Uri(strURL);
@@ -199,7 +199,7 @@ namespace GetIdol
                 int temp = 0;
                 for (; ; )
                 {
-                    sankaku_cookies = GetSankakuCookies("http://chan.sankakucomplex.com/");
+                    sankaku_cookies = GetSankakuCookies("https://idol.sankakucomplex.com/");
                     if (sankaku_cookies != null)
                     {
                         break;
@@ -314,13 +314,14 @@ namespace GetIdol
         static List<int> ParseHTML_sankaku(string html)
         {
             List<int> temp = new List<int>();
-            Regex rx_digit = new Regex("[0-9]*", RegexOptions.Compiled);
+            Regex rx_digit = new Regex("[0-9]+", RegexOptions.Compiled);
             Regex rx = new Regex(@"PostModeMenu\.click\([0-9]*\)", RegexOptions.Compiled);
             MatchCollection matches = rx.Matches(html);
             foreach (Match match in matches)
             {
                 //string json = match.Value.Substring(19, match.Value.Length - 20);
                 //json = json.Remove(json.Length-2);
+                //MatchCollection m = rx_digit.Matches(match.Value);
                 temp.Add(int.Parse(rx_digit.Match(match.Value).Value));
             }
             return temp;
