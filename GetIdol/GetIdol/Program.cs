@@ -58,7 +58,33 @@ namespace GetIdol
             Console.WriteLine("Импортируем тег " + tags.ToString() + " с санкаки");
             List<int> post_ids = GetImageInfoFromSankaku(tags.ToString());
             Console.Write("\n\n\n\t\tНАЧИНАЕТСЯ ЗАГРУЗКА\n\n\n");
-            int num6 = download(post_ids, ".\\" + tags.ToString());
+            //int num6 = download(post_ids, ".\\" + tags.ToString());
+            int count_complit = 0;
+            int count_deleted = 0;
+            int count_error = 0;
+            int count_skip = 0;
+            Directory.CreateDirectory(".\\" + tags.ToString());
+            for (int i = 0; i < post_ids.Count; i++)
+            {
+                Console.WriteLine("\n###### {0}/{1} ######", (i + 1), post_ids.Count);
+                for (int index = 0; index < LIMIT_ERRORS; index++)
+                {
+                    DateTime start = DateTime.Now;
+                    if (DownloadImageFromSankaku(post_ids[i], ".\\" + tags.ToString(), sankaku_cookies))
+                    {
+                        MyWait(start, 5000);
+                        count_complit++;
+                        break;
+                    }
+                    MyWait(start, 5000);
+                    if (index == 3)
+                    {
+                        count_error++;
+                    }
+                }
+            }
+            Console.WriteLine("Успешно скачано: {0}\nСкачано ренее: {1}\nУдалено ранее: {2}\nОшибочно: {3}\nВсего: {4}", count_complit, count_skip, count_deleted, count_error, post_ids.Count);
+            return;
         }
         static bool DownloadImageFromSankaku(int post_id, string dir, CookieCollection cookies)
         {
@@ -115,21 +141,15 @@ namespace GetIdol
                         DateTime pred = DateTime.Now;
                         Console.Write("\rСкачано " + cnt.ToString("#,###,###") + " из " + wrp.ContentLength.ToString("#,###,###") + " байт Скорость: " + ((cnt / (pred - start).TotalSeconds) / 1024).ToString("0.00") + " Килобайт в секунду.");
                     }
-                    //DateTime finish = DateTime.Now;
-                    //Console.WriteLine("Средняя скорость загрузки составила {0} байт в секунду.", ((cnt / (finish - start).TotalSeconds) / 1024).ToString("0.00"));
                 }
                 if (cnt < wrp.ContentLength)
                 {
                     Console.WriteLine("\nОбрыв! Закачка не завершена!");
-                    //rStream.Close();
-                    //wrp.Close();
                     return false;
                 }
                 else
                 {
                     Console.WriteLine("\nЗакачка завершена.");
-                    //rStream.Close();
-                    //wrp.Close();
                     return true;
                 }
             }
@@ -352,43 +372,6 @@ namespace GetIdol
             {
                 return dir + "\\" + Path.GetFileName(url);
             }
-        }
-        static int download(List<int> list, string dir)
-        {
-            int count_complit = 0;
-            int count_deleted = 0;
-            int count_error = 0;
-            int count_skip = 0;
-            Directory.CreateDirectory(dir);
-            for (int i = 0; i < list.Count; i++)
-            {
-                Console.WriteLine("\n###### {0}/{1} ######", (i + 1), list.Count);
-                long r = DownloadImage(list[i], dir);
-                if (r == 0)
-                {
-                    count_complit++;
-                }
-                else
-                {
-                    count_error++;
-                }
-            }
-            Console.WriteLine("Успешно скачано: {0}\nСкачано ренее: {1}\nУдалено ранее: {2}\nОшибочно: {3}\nВсего: {4}", count_complit, count_skip, count_deleted, count_error, list.Count);
-            return count_error;
-        }
-        static long DownloadImage(int post_id, string dir)
-        {
-            for (int index = 0; index < LIMIT_ERRORS; index++)
-            {
-                    DateTime start = DateTime.Now;
-                    if (DownloadImageFromSankaku(post_id, dir, sankaku_cookies))
-                    {
-                        MyWait(start, 5000);
-                        return 0;
-                    }
-                    MyWait(start, 5000);
-            }
-            return 1;
         }
         static void MyWait(DateTime start, int delay)
         {
