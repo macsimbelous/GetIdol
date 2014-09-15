@@ -31,16 +31,34 @@ namespace GetIdol
     class Program
     {
         static CookieCollection sankaku_cookies = null;
-        static string BaseURL = "https://idol.sankakucomplex.com/post/index";
+        static string BaseURL = "https://idol.sankakucomplex.com/";
         static int LIMIT_ERRORS = 4;
         static string UserAgent = "Mozilla/5.0 (Windows NT 6.2; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/34.0.1847.116 Safari/537.36";
         static void Main(string[] args)
         {
+            if (args.Length <= 0) 
+            { 
+                Console.WriteLine("Не заданы теги!");
+                return;
+            }
+            StringBuilder tags = new StringBuilder();
+            for(int i=0;i<args.Length;i++)
+            {
+                if (i == 0)
+                {
+                    tags.Append(WebUtility.UrlEncode(args[i]));
+                }
+                else
+                {
+                    tags.Append("+");
+                    tags.Append(WebUtility.UrlEncode(args[i]));
+                }
+            }
             ServicePointManager.ServerCertificateValidationCallback = ValidationCallback;
-            Console.WriteLine("Импортируем тег " + args[0] + " с санкаки");
-            List<int> post_ids = GetImageInfoFromSankaku(args[0]);
+            Console.WriteLine("Импортируем тег " + tags.ToString() + " с санкаки");
+            List<int> post_ids = GetImageInfoFromSankaku(tags.ToString());
             Console.Write("\n\n\n\t\tНАЧИНАЕТСЯ ЗАГРУЗКА\n\n\n");
-            int num6 = download(post_ids, ".\\" + args[0]);
+            int num6 = download(post_ids, ".\\" + tags.ToString());
         }
         static bool DownloadImageFromSankaku(int post_id, string dir, CookieCollection cookies)
         {
@@ -61,7 +79,7 @@ namespace GetIdol
             Stream rStream = null;
             try
             {
-                httpWRQ.Referer = "https://idol.sankakucomplex.com/post/show/" + post_id.ToString();
+                httpWRQ.Referer = BaseURL + "post/show/" + post_id.ToString();
                 httpWRQ.UserAgent = UserAgent;
                 httpWRQ.Accept = "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8";
                 httpWRQ.Headers.Add("Accept-Encoding: identity");
@@ -139,17 +157,13 @@ namespace GetIdol
         }
         static string GetPostPage(int npost, CookieCollection cookies)
         {
-            string strURL = "https://idol.sankakucomplex.com/post/show/" + npost.ToString();
+            string strURL = BaseURL + "post/show/" + npost.ToString();
             Console.WriteLine("Загружаем и парсим пост: " + strURL);
-            //WebClient Client = new WebClient();
-            //Uri uri = new Uri(strURL);
-            //Client.Headers.Add("user-agent", "Mozilla/5.0 (compatible; MSIE 10.0; Windows NT 6.2; WOW64; Trident/6.0)");
             while (true)
             {
                 try
                 {
                     return DownloadStringFromSankaku(strURL, null, cookies);
-                    //return Client.DownloadString(uri);
                 }
                 catch (WebException we)
                 {
@@ -162,7 +176,6 @@ namespace GetIdol
         static string GetOriginalUrlFromPostPage(string post)
         {
             string file_url = "<li>Original: <a href=\"";
-            //Regex rx = new Regex(file_url + "(?:(?:ht|f)tps?://)?(?:[\\-\\w]+:[\\-\\w]+@)?(?:[0-9a-z][\\-0-9a-z]*[0-9a-z]\\.)+[a-z]{2,6}(?::\\d{1,5})?(?:[?/\\\\#][?!^$.(){}:|=[\\]+\\-/\\\\*;&~#@,%\\wА-Яа-я]*)?", RegexOptions.Compiled);
             Regex rx = new Regex(file_url + @"\/\/[\w\-_]+(\.[\w\-_]+)+([\w\-\.,@?^=%&amp;:/~\+#]*[\w\-\@?^=%&amp;/~\+#])?", RegexOptions.Compiled);
             try
             {
@@ -199,7 +212,7 @@ namespace GetIdol
                 int temp = 0;
                 for (; ; )
                 {
-                    sankaku_cookies = GetSankakuCookies("https://idol.sankakucomplex.com/");
+                    sankaku_cookies = GetSankakuCookies(BaseURL);
                     if (sankaku_cookies != null)
                     {
                         break;
@@ -319,9 +332,6 @@ namespace GetIdol
             MatchCollection matches = rx.Matches(html);
             foreach (Match match in matches)
             {
-                //string json = match.Value.Substring(19, match.Value.Length - 20);
-                //json = json.Remove(json.Length-2);
-                //MatchCollection m = rx_digit.Matches(match.Value);
                 temp.Add(int.Parse(rx_digit.Match(match.Value).Value));
             }
             return temp;
