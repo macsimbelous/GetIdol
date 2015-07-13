@@ -189,7 +189,7 @@ namespace GetIdol
                 catch (WebException we)
                 {
                     Console.WriteLine(we.Message);
-                    Thread.Sleep(10000);
+                    Thread.Sleep(90000);
                     return null;
                 }
             }
