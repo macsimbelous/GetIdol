@@ -33,7 +33,7 @@ namespace GetIdol
         static CookieCollection sankaku_cookies = null;
         //static string BaseURL = "https://idol.sankakucomplex.com/";
         static string BaseURL = "https://chan.sankakucomplex.com/";
-        static int LIMIT_ERRORS = 4;
+        static int LIMIT_ERRORS = 2;
         static string UserAgent = "Mozilla/5.0 (Windows NT 6.2; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/34.0.1847.116 Safari/537.36";
         static void Main(string[] args)
         {
@@ -73,11 +73,11 @@ namespace GetIdol
                     DateTime start = DateTime.Now;
                     if (DownloadImageFromSankaku(post_ids[i], ".\\" + tags.ToString(), sankaku_cookies))
                     {
-                        MyWait(start, 5000);
+                        MyWait(start, 7000);
                         count_complit++;
                         break;
                     }
-                    MyWait(start, 5000);
+                    MyWait(start, 7000);
                     if (index == 3)
                     {
                         count_error++;
@@ -261,7 +261,7 @@ namespace GetIdol
                 Console.Write("({0}/ХЗ) ", imgs.Count);
                 DateTime start = DateTime.Now;
                 string text = DownloadHTML(BaseURL, tag, i, sankaku_cookies);
-                MyWait(start, 5000);
+                MyWait(start, 7000);
                 if (text != null)
                 {
                     List<int> posts = ParseHTML_sankaku(text);
