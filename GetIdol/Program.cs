@@ -73,12 +73,12 @@ namespace GetIdol
                     DateTime start = DateTime.Now;
                     if (DownloadImageFromSankaku(post_ids[i], ".\\" + tags.ToString(), sankaku_cookies))
                     {
-                        MyWait(start, 7000);
+                        MyWait(start, 5000);
                         count_complit++;
                         break;
                     }
                     MyWait(start, 7000);
-                    if (index == 3)
+                    if (index == LIMIT_ERRORS-1)
                     {
                         count_error++;
                     }
@@ -101,6 +101,12 @@ namespace GetIdol
 
             Console.WriteLine("Начинаем закачку {0}.", url);
             FileInfo fi = new FileInfo(filename);
+            //ВРЕМЕННО!!!!!!!!
+            if (fi.Exists)
+            {
+                Console.WriteLine("Уже скачан.");
+                return true;
+            }
             HttpWebRequest httpWRQ = (HttpWebRequest)HttpWebRequest.Create(new Uri(url));
             WebResponse wrp = null;
             Stream rStream = null;
@@ -189,7 +195,7 @@ namespace GetIdol
                 catch (WebException we)
                 {
                     Console.WriteLine(we.Message);
-                    Thread.Sleep(90000);
+                    Thread.Sleep(300000);
                     return null;
                 }
             }
@@ -261,7 +267,7 @@ namespace GetIdol
                 Console.Write("({0}/ХЗ) ", imgs.Count);
                 DateTime start = DateTime.Now;
                 string text = DownloadHTML(BaseURL, tag, i, sankaku_cookies);
-                MyWait(start, 7000);
+                MyWait(start, 5000);
                 if (text != null)
                 {
                     List<int> posts = ParseHTML_sankaku(text);
@@ -328,7 +334,7 @@ namespace GetIdol
                 catch (WebException we)
                 {
                     Console.WriteLine("Ошибка: " + we.Message);
-                    Thread.Sleep(60000);
+                    Thread.Sleep(300000);
                     if (we.Response == null) { continue; }
                     if (((HttpWebResponse)we.Response).StatusCode == HttpStatusCode.ServiceUnavailable)
                     {
