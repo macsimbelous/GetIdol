@@ -31,7 +31,8 @@ namespace GetIdol
     class Program
     {
         static CookieCollection sankaku_cookies = null;
-        static string BaseURL = "https://idol.sankakucomplex.com/";
+        //static string BaseURL = "https://idol.sankakucomplex.com/";
+        static string BaseURL = "https://chan.sankakucomplex.com/";
         static int LIMIT_ERRORS = 4;
         static string UserAgent = "Mozilla/5.0 (Windows NT 6.2; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/34.0.1847.116 Safari/537.36";
         static void Main(string[] args)
