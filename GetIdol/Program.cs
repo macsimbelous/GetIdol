@@ -34,6 +34,8 @@ namespace GetIdol
         //static string BaseURL = "https://idol.sankakucomplex.com/";
         static string BaseURL = "https://chan.sankakucomplex.com/";
         static int LIMIT_ERRORS = 2;
+        static int TIME_OUT = 5 * 1000;
+        static int TIME_OUT_ERROR = (5 * 60) * 1000;
         static string UserAgent = "Mozilla/5.0 (Windows NT 6.2; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/34.0.1847.116 Safari/537.36";
         static void Main(string[] args)
         {
@@ -59,7 +61,6 @@ namespace GetIdol
             Console.WriteLine("Импортируем тег " + tags.ToString() + " с санкаки");
             List<int> post_ids = GetImageInfoFromSankaku(tags.ToString());
             Console.Write("\n\n\n\t\tНАЧИНАЕТСЯ ЗАГРУЗКА\n\n\n");
-            //int num6 = download(post_ids, ".\\" + tags.ToString());
             int count_complit = 0;
             int count_deleted = 0;
             int count_error = 0;
@@ -70,14 +71,14 @@ namespace GetIdol
                 Console.WriteLine("\n###### {0}/{1} ######", (i + 1), post_ids.Count);
                 for (int index = 0; index < LIMIT_ERRORS; index++)
                 {
-                    DateTime start = DateTime.Now;
+                    //DateTime start = DateTime.Now;
                     if (DownloadImageFromSankaku(post_ids[i], ".\\" + tags.ToString(), sankaku_cookies))
                     {
-                        MyWait(start, 5000);
+                        //MyWait(start, 5000);
                         count_complit++;
                         break;
                     }
-                    MyWait(start, 7000);
+                    //MyWait(start, 7000);
                     if (index == LIMIT_ERRORS-1)
                     {
                         count_error++;
@@ -89,6 +90,7 @@ namespace GetIdol
         }
         static bool DownloadImageFromSankaku(int post_id, string dir, CookieCollection cookies)
         {
+            Thread.Sleep(TIME_OUT);
             string post = GetPostPage(post_id, cookies);
             if (post == null) { return false; }
             string url = GetOriginalUrlFromPostPage(post);
@@ -107,6 +109,7 @@ namespace GetIdol
                 Console.WriteLine("Уже скачан.");
                 return true;
             }
+            Thread.Sleep(TIME_OUT - 2000);
             HttpWebRequest httpWRQ = (HttpWebRequest)HttpWebRequest.Create(new Uri(url));
             WebResponse wrp = null;
             Stream rStream = null;
@@ -195,7 +198,7 @@ namespace GetIdol
                 catch (WebException we)
                 {
                     Console.WriteLine(we.Message);
-                    Thread.Sleep(300000);
+                    Thread.Sleep(TIME_OUT_ERROR);
                     return null;
                 }
             }
@@ -246,10 +249,10 @@ namespace GetIdol
                     }
                     else
                     {
-                        if (temp < 4)
+                        if (temp < LIMIT_ERRORS)
                         {
                             temp++;
-                            Thread.Sleep(5000);
+                            Thread.Sleep(TIME_OUT);
                             continue;
                         }
                         else
@@ -264,10 +267,11 @@ namespace GetIdol
             int i = 1;
             while (true)
             {
+                Thread.Sleep(TIME_OUT);
                 Console.Write("({0}/ХЗ) ", imgs.Count);
-                DateTime start = DateTime.Now;
+                //DateTime start = DateTime.Now;
                 string text = DownloadHTML(BaseURL, tag, i, sankaku_cookies);
-                MyWait(start, 5000);
+                //MyWait(start, 5000);
                 if (text != null)
                 {
                     List<int> posts = ParseHTML_sankaku(text);
@@ -334,11 +338,11 @@ namespace GetIdol
                 catch (WebException we)
                 {
                     Console.WriteLine("Ошибка: " + we.Message);
-                    Thread.Sleep(300000);
+                    Thread.Sleep(TIME_OUT_ERROR);
                     if (we.Response == null) { continue; }
                     if (((HttpWebResponse)we.Response).StatusCode == HttpStatusCode.ServiceUnavailable)
                     {
-                        if (count_503 < 4)
+                        if (count_503 < LIMIT_ERRORS)
                         {
                             count_503++;
                             continue;
