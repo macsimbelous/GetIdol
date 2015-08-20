@@ -25,6 +25,8 @@ using System.Text.RegularExpressions;
 using System.IO;
 using System.Net;
 using System.Threading;
+using System.Globalization;
+using System.Data.SQLite;
 
 namespace GetIdol
 {
@@ -37,6 +39,7 @@ namespace GetIdol
         static int TIME_OUT = 5 * 1000;
         static int TIME_OUT_ERROR = (5 * 60) * 1000;
         static string UserAgent = "Mozilla/5.0 (Windows NT 6.2; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/34.0.1847.116 Safari/537.36";
+        static string ConnectionString = @"data source=C:\utils\erza\erza.sqlite";
         static void Main(string[] args)
         {
             if (args.Length <= 0) 
@@ -100,7 +103,11 @@ namespace GetIdol
                 return false;
             }
             string filename = GetFileName(dir, url);
-
+            if (ExistImage(Path.GetFileNameWithoutExtension(url)))
+            {
+                Console.WriteLine("Уже скачан.");
+                return true;
+            }
             Console.WriteLine("Начинаем закачку {0}.", url);
             FileInfo fi = new FileInfo(filename);
             //ВРЕМЕННО!!!!!!!!
@@ -400,6 +407,47 @@ namespace GetIdol
         static bool ValidationCallback(Object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors)
         {
             return true;
+        }
+        static bool ExistImage(string hash_string)
+        {
+            if (hash_string == null)
+            {
+                throw new ArgumentNullException("hexString");
+            }
+            if ((hash_string.Length & 1) != 0)
+            {
+                throw new ArgumentOutOfRangeException("hexString", hash_string, "hexString must contain an even number of characters.");
+            }
+            byte[] hash = new byte[hash_string.Length / 2];
+            for (int i = 0; i < hash_string.Length; i += 2)
+            {
+                hash[i / 2] = byte.Parse(hash_string.Substring(i, 2), NumberStyles.HexNumber);
+            }
+            using (SQLiteConnection connection = new SQLiteConnection(ConnectionString))
+            {
+                connection.Open();
+                using (SQLiteCommand command = new SQLiteCommand())
+                {
+                    command.CommandText = "select * from hash_tags where hash = @hash";
+                    command.Parameters.AddWithValue("hash", hash);
+                    command.Connection = connection;
+                    SQLiteDataReader reader = command.ExecuteReader();
+                    if (reader.Read())
+                    {
+                        if (System.Convert.ToBoolean(reader["is_deleted"])) { return true; }
+                        if (Convert.IsDBNull(reader["file_name"]))
+                        {
+                            return false;
+                        }
+                        reader.Close();
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                }
+            }
         }
     }
 }
