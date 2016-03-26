@@ -359,6 +359,10 @@ namespace GetIdol
                             return null;
                         }
                     }
+                    if (((HttpWebResponse)we.Response).StatusCode == HttpStatusCode.NotFound)
+                    {
+                        return null;
+                    }
                 }
             }
         }
