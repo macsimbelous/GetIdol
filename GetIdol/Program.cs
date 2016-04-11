@@ -40,24 +40,33 @@ namespace GetIdol
         static int TIME_OUT_ERROR = (5 * 60) * 1000;
         static string UserAgent = "Mozilla/5.0 (Windows NT 6.2; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/34.0.1847.116 Safari/537.36";
         static string ConnectionString = @"data source=C:\utils\erza\erza.sqlite";
+        static int StartPage = 1;
+        static int MaxPage = -1;
+        static List<string> Tags = null;
         static void Main(string[] args)
         {
             if (args.Length <= 0) 
             { 
+                Console.WriteLine("Не заданы параметры!");
+                return;
+            }
+            ParseArgs(args);
+            if (Tags.Count <= 0)
+            {
                 Console.WriteLine("Не заданы теги!");
                 return;
             }
             StringBuilder tags = new StringBuilder();
-            for(int i=0;i<args.Length;i++)
+            for(int i=0;i<Tags.Count;i++)
             {
                 if (i == 0)
                 {
-                    tags.Append(WebUtility.UrlEncode(args[i]));
+                    tags.Append(WebUtility.UrlEncode(Tags[i]));
                 }
                 else
                 {
                     tags.Append("+");
-                    tags.Append(WebUtility.UrlEncode(args[i]));
+                    tags.Append(WebUtility.UrlEncode(Tags[i]));
                 }
             }
             ServicePointManager.ServerCertificateValidationCallback = ValidationCallback;
@@ -90,6 +99,47 @@ namespace GetIdol
             }
             Console.WriteLine("Успешно скачано: {0}\nСкачано ренее: {1}\nУдалено ранее: {2}\nОшибочно: {3}\nВсего: {4}", count_complit, count_skip, count_deleted, count_error, post_ids.Count);
             return;
+        }
+        static void ParseArgs(string[] args)
+        {
+            string start_page_string = "--start_page=";
+            string max_page_string = "--max_page=";
+            string nosqlite_string = "--nosqlite";
+            string sqlite_path_string = "--sqlite-path=";
+            Program.Tags = new List<string>();
+            foreach (string param in args)
+            {
+                if (param == nosqlite_string)
+                {
+                    //Program.config.UseDB = false;
+                    continue;
+                }
+                if (param.Length >= sqlite_path_string.Length)
+                {
+                    if (param.Substring(0, sqlite_path_string.Length) == sqlite_path_string)
+                    {
+                        //Program.config.ConnectionString = "data source=" + param.Substring(sqlite_path_string.Length);
+                        continue;
+                    }
+                }
+                if (param.Length >= start_page_string.Length)
+                {
+                    if (param.Substring(0, start_page_string.Length) == start_page_string)
+                    {
+                        Program.StartPage = int.Parse(param.Substring(start_page_string.Length));
+                        continue;
+                    }
+                }
+                if (param.Length >= max_page_string.Length)
+                {
+                    if (param.Substring(0, max_page_string.Length) == max_page_string)
+                    {
+                        Program.MaxPage = int.Parse(param.Substring(max_page_string.Length));
+                        continue;
+                    }
+                }
+                Program.Tags.Add(param);
+            }
         }
         static bool DownloadImageFromSankaku(int post_id, string dir, CookieCollection cookies)
         {
@@ -271,9 +321,14 @@ namespace GetIdol
                 }
             }
             List<int> imgs = new List<int>();
-            int i = 1;
+            //int i = 1;
+            int i = Program.StartPage;
             while (true)
             {
+                if (Program.MaxPage >= 0)
+                {
+                    if (i >= Program.StartPage + Program.MaxPage) { break; }
+                }
                 Thread.Sleep(TIME_OUT);
                 Console.Write("({0}/ХЗ) ", imgs.Count);
                 //DateTime start = DateTime.Now;
