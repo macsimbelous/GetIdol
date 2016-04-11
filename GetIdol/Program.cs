@@ -36,7 +36,7 @@ namespace GetIdol
         //static string BaseURL = "https://idol.sankakucomplex.com/";
         static string BaseURL = "https://chan.sankakucomplex.com/";
         static int LIMIT_ERRORS = 2;
-        static int TIME_OUT = 5 * 1000;
+        static int TIME_OUT = 7 * 1000;
         static int TIME_OUT_ERROR = (5 * 60) * 1000;
         static string UserAgent = "Mozilla/5.0 (Windows NT 6.2; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/34.0.1847.116 Safari/537.36";
         static string ConnectionString = @"data source=C:\utils\erza\erza.sqlite";
@@ -126,6 +126,7 @@ namespace GetIdol
                 {
                     if (param.Substring(0, start_page_string.Length) == start_page_string)
                     {
+                        
                         Program.StartPage = int.Parse(param.Substring(start_page_string.Length));
                         continue;
                     }
