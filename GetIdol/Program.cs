@@ -126,8 +126,20 @@ namespace GetIdol
                 {
                     if (param.Substring(0, start_page_string.Length) == start_page_string)
                     {
-                        
-                        Program.StartPage = int.Parse(param.Substring(start_page_string.Length));
+                        if (param.Length > start_page_string.Length)
+                        {
+                            Program.StartPage = int.Parse(param.Substring(start_page_string.Length));
+                            if(Program.StartPage < 1)
+                            {
+                                Console.WriteLine("Параметр {0} не может быть меньше 1", param);
+                                Environment.Exit(1);
+                            }
+                        }
+                        else
+                        {
+                            Console.WriteLine("Не правильно задан параметр {0}", param);
+                            Environment.Exit(1);
+                        }
                         continue;
                     }
                 }
@@ -135,7 +147,20 @@ namespace GetIdol
                 {
                     if (param.Substring(0, max_page_string.Length) == max_page_string)
                     {
-                        Program.MaxPage = int.Parse(param.Substring(max_page_string.Length));
+                        if (param.Length > max_page_string.Length)
+                        {
+                            Program.MaxPage = int.Parse(param.Substring(max_page_string.Length));
+                            if (Program.MaxPage < 0)
+                            {
+                                Console.WriteLine("Параметр {0} не может быть меньше 0", param);
+                                Environment.Exit(1);
+                            }
+                        }
+                        else
+                        {
+                            Console.WriteLine("Не правильно задан параметр {0}", param);
+                            Environment.Exit(1);
+                        }
                         continue;
                     }
                 }
