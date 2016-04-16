@@ -33,6 +33,7 @@ namespace GetIdol
     class Program
     {
         static CookieCollection sankaku_cookies = null;
+        static string RawCookies = null;
         //static string BaseURL = "https://idol.sankakucomplex.com/";
         static string BaseURL = "https://chan.sankakucomplex.com/";
         static int LIMIT_ERRORS = 2;
@@ -43,6 +44,8 @@ namespace GetIdol
         static int StartPage = 1;
         static int MaxPage = -1;
         static List<string> Tags = null;
+        static string login = "macsimbelous";
+        static string password = "050782";
         static void Main(string[] args)
         {
             if (args.Length <= 0) 
@@ -202,8 +205,9 @@ namespace GetIdol
                 httpWRQ.UserAgent = UserAgent;
                 httpWRQ.Accept = "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8";
                 httpWRQ.Headers.Add("Accept-Encoding: identity");
-                httpWRQ.CookieContainer = new CookieContainer();
-                httpWRQ.CookieContainer.Add(cookies);
+                //httpWRQ.CookieContainer = new CookieContainer();
+                //httpWRQ.CookieContainer.Add(cookies);
+                httpWRQ.Headers.Add(HttpRequestHeader.Cookie, RawCookies);
                 httpWRQ.Timeout = 60 * 1000;
                 wrp = httpWRQ.GetResponse();
                 if (fi.Exists)
@@ -325,7 +329,7 @@ namespace GetIdol
                 int temp = 0;
                 for (; ; )
                 {
-                    sankaku_cookies = GetSankakuCookies(BaseURL);
+                    sankaku_cookies = GetSankakuCookies("https://chan.sankakucomplex.com/user/authenticate");
                     if (sankaku_cookies != null)
                     {
                         break;
@@ -382,9 +386,22 @@ namespace GetIdol
                 HttpWebRequest loginRequest = (HttpWebRequest)WebRequest.Create(url);
                 loginRequest.UserAgent = UserAgent;
                 loginRequest.Accept = "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8";
+                loginRequest.ContentType = "application/x-www-form-urlencoded";
                 loginRequest.Headers.Add("Accept-Encoding: identity");
                 loginRequest.CookieContainer = new CookieContainer();
+                loginRequest.Method = "POST";
+                string PostData = String.Format("user%5Bname%5D={0}&user%5Bpassword%5D={1}", login, password);
+                Encoding encoding = Encoding.UTF8;
+                byte[] byte1 = encoding.GetBytes(PostData);
+                loginRequest.ContentLength = byte1.Length;
+                using (Stream st = loginRequest.GetRequestStream())
+                {
+                    st.Write(byte1, 0, byte1.Length);
+                    st.Close();
+                }
+                loginRequest.AllowAutoRedirect = false;
                 HttpWebResponse loginResponse = (HttpWebResponse)loginRequest.GetResponse();
+                RawCookies = loginResponse.Headers["Set-Cookie"];
                 return loginResponse.Cookies;
             }
             catch (WebException we)
@@ -399,8 +416,9 @@ namespace GetIdol
             downloadRequest.UserAgent = UserAgent;
             downloadRequest.Accept = "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8";
             downloadRequest.Headers.Add("Accept-Encoding: identity");
-            downloadRequest.CookieContainer = new CookieContainer();
-            downloadRequest.CookieContainer.Add(cookies);
+            downloadRequest.Headers.Add(HttpRequestHeader.Cookie, RawCookies);
+            //downloadRequest.CookieContainer = new CookieContainer();
+            //downloadRequest.CookieContainer.Add(cookies);
             if (referer != null)
             {
                 downloadRequest.Referer = referer;
