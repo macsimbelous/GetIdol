@@ -1,0 +1,8 @@
+C:\Users\macs\Source\Repos\GetIdol\GetIdol\obj\Debug\GetIdol.csprojResolveAssemblyReference.cache
+C:\Users\macs\Source\Repos\GetIdol\GetIdol\bin\Debug\GetIdol.exe.config
+C:\Users\macs\Source\Repos\GetIdol\GetIdol\bin\Debug\GetIdol.exe
+C:\Users\macs\Source\Repos\GetIdol\GetIdol\bin\Debug\GetIdol.pdb
+C:\Users\macs\Source\Repos\GetIdol\GetIdol\bin\Debug\System.Data.SQLite.dll
+C:\Users\macs\Source\Repos\GetIdol\GetIdol\bin\Debug\System.Data.SQLite.xml
+C:\Users\macs\Source\Repos\GetIdol\GetIdol\obj\Debug\GetIdol.exe
+C:\Users\macs\Source\Repos\GetIdol\GetIdol\obj\Debug\GetIdol.pdb

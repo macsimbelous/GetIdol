@@ -1,0 +1,17 @@
+{
+"BaseURL":"https:\/\/chan.sankakucomplex.com\/",
+"ConnectionString":"data source=C:\\utils\\erza\\erza.sqlite",
+"DownloadPath":".",
+"LimitErrors":2,
+"ProxyAddress":"128.199.50.53",
+"ProxyLogin":"maksim",
+"ProxyPassword":"48sf54ro",
+"ProxyPort":8888,
+"SankakuLogin":"macsimbelous",
+"SankakuPassword":"050782",
+"TimeOut":5000,
+"TimeOutError":300000,
+"UseDB":true,
+"UseProxy":true,
+"UserAgent":"Mozilla \/ 5.0(Windows NT 6.2; WOW64) AppleWebKit \/ 537.36(KHTML, like Gecko) Chrome \/ 34.0.1847.116 Safari \/ 537.36"
+}

@@ -27,6 +27,8 @@ using System.Net;
 using System.Threading;
 using System.Globalization;
 using System.Data.SQLite;
+using System.Runtime.Serialization.Json;
+using System.Runtime.Serialization;
 
 namespace GetIdol
 {
@@ -34,20 +36,13 @@ namespace GetIdol
     {
         static CookieCollection sankaku_cookies = null;
         static string RawCookies = null;
-        //static string BaseURL = "https://idol.sankakucomplex.com/";
-        static string BaseURL = "https://chan.sankakucomplex.com/";
-        static int LIMIT_ERRORS = 2;
-        static int TIME_OUT = 7 * 1000;
-        static int TIME_OUT_ERROR = (5 * 60) * 1000;
-        static string UserAgent = "Mozilla/5.0 (Windows NT 6.2; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/34.0.1847.116 Safari/537.36";
-        static string ConnectionString = @"data source=C:\utils\erza\erza.sqlite";
         static int StartPage = 1;
         static int MaxPage = -1;
         static List<string> Tags = null;
-        static string login = "macsimbelous";
-        static string password = "050782";
+        static GetidolConfig config = null;
         static void Main(string[] args)
         {
+            LoadSettings();
             if (args.Length <= 0) 
             { 
                 Console.WriteLine("Не заданы параметры!");
@@ -84,7 +79,7 @@ namespace GetIdol
             for (int i = 0; i < post_ids.Count; i++)
             {
                 Console.WriteLine("\n###### {0}/{1} ######", (i + 1), post_ids.Count);
-                for (int index = 0; index < LIMIT_ERRORS; index++)
+                for (int index = 0; index < Program.config.LimitErrors; index++)
                 {
                     //DateTime start = DateTime.Now;
                     if (DownloadImageFromSankaku(post_ids[i], ".\\" + tags.ToString(), sankaku_cookies))
@@ -94,7 +89,7 @@ namespace GetIdol
                         break;
                     }
                     //MyWait(start, 7000);
-                    if (index == LIMIT_ERRORS-1)
+                    if (index == Program.config.LimitErrors - 1)
                     {
                         count_error++;
                     }
@@ -102,6 +97,52 @@ namespace GetIdol
             }
             Console.WriteLine("Успешно скачано: {0}\nСкачано ренее: {1}\nУдалено ранее: {2}\nОшибочно: {3}\nВсего: {4}", count_complit, count_skip, count_deleted, count_error, post_ids.Count);
             return;
+        }
+        static void LoadSettings()
+        {
+            Program.config = new GetidolConfig();
+            //Параметры по умолчанию
+            Program.config.BaseURL = "https://chan.sankakucomplex.com/";
+            Program.config.TimeOut = 5 * 1000;
+            Program.config.TimeOutError = (5 * 60) * 1000;
+            Program.config.ConnectionString = @"data source=C:\utils\erza\erza.sqlite";
+            Program.config.UseDB = false;
+            Program.config.UserAgent = "Mozilla / 5.0(Windows NT 6.2; WOW64) AppleWebKit / 537.36(KHTML, like Gecko) Chrome / 34.0.1847.116 Safari / 537.36";
+            Program.config.LimitErrors = 2;
+            Program.config.SankakuLogin = null;
+            Program.config.SankakuPassword = null;
+            Program.config.UseProxy = false;
+            Program.config.ProxyAddress = null;
+            Program.config.ProxyPort = 8888;
+            Program.config.ProxyLogin = null;
+            Program.config.ProxyPassword = null;
+            Program.config.DownloadPath = ".";
+            DataContractJsonSerializer jsonFormatter = new DataContractJsonSerializer(typeof(GetidolConfig));
+            //jsonFormatter.WriteObject(System.IO.File.Create(".\\test.json"), Program.config);
+            if (File.Exists(".\\Getidol.json"))
+            {
+                using (FileStream fs = new FileStream(".\\Getidol.json", FileMode.Open))
+                {
+                    Program.config = (GetidolConfig)jsonFormatter.ReadObject(fs);
+                }
+                return;
+            }
+            if (File.Exists(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "\\Getidol\\Getidol.json"))
+            {
+                using (FileStream fs = new FileStream(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "\\Getidol\\Getidol.json", FileMode.Open))
+                {
+                    Program.config = (GetidolConfig)jsonFormatter.ReadObject(fs);
+                }
+                return;
+            }
+            if (File.Exists(Path.GetDirectoryName(Environment.GetCommandLineArgs()[0]) + "\\Getidol.json"))
+            {
+                using (FileStream fs = new FileStream(Path.GetDirectoryName(Environment.GetCommandLineArgs()[0]) + "\\Getidol.json", FileMode.Open))
+                {
+                    Program.config = (GetidolConfig)jsonFormatter.ReadObject(fs);
+                }
+                return;
+            }
         }
         static void ParseArgs(string[] args)
         {
@@ -172,7 +213,7 @@ namespace GetIdol
         }
         static bool DownloadImageFromSankaku(int post_id, string dir, CookieCollection cookies)
         {
-            Thread.Sleep(TIME_OUT);
+            Thread.Sleep(Program.config.TimeOut);
             string post = GetPostPage(post_id, cookies);
             if (post == null) { return false; }
             string url = GetOriginalUrlFromPostPage(post);
@@ -195,14 +236,14 @@ namespace GetIdol
                 Console.WriteLine("Уже скачан.");
                 return true;
             }
-            Thread.Sleep(TIME_OUT - 2000);
+            Thread.Sleep(Program.config.TimeOut - 2000);
             HttpWebRequest httpWRQ = (HttpWebRequest)HttpWebRequest.Create(new Uri(url));
             WebResponse wrp = null;
             Stream rStream = null;
             try
             {
-                httpWRQ.Referer = BaseURL + "post/show/" + post_id.ToString();
-                httpWRQ.UserAgent = UserAgent;
+                httpWRQ.Referer = Program.config.BaseURL + "post/show/" + post_id.ToString();
+                httpWRQ.UserAgent = Program.config.UserAgent;
                 httpWRQ.Accept = "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8";
                 httpWRQ.Headers.Add("Accept-Encoding: identity");
                 //httpWRQ.CookieContainer = new CookieContainer();
@@ -274,7 +315,7 @@ namespace GetIdol
         }
         static string GetPostPage(int npost, CookieCollection cookies)
         {
-            string strURL = BaseURL + "post/show/" + npost.ToString();
+            string strURL = Program.config.BaseURL + "post/show/" + npost.ToString();
             Console.WriteLine("Загружаем и парсим пост: " + strURL);
             while (true)
             {
@@ -285,7 +326,7 @@ namespace GetIdol
                 catch (WebException we)
                 {
                     Console.WriteLine(we.Message);
-                    Thread.Sleep(TIME_OUT_ERROR);
+                    Thread.Sleep(Program.config.TimeOutError);
                     return null;
                 }
             }
@@ -336,10 +377,10 @@ namespace GetIdol
                     }
                     else
                     {
-                        if (temp < LIMIT_ERRORS)
+                        if (temp < Program.config.LimitErrors)
                         {
                             temp++;
-                            Thread.Sleep(TIME_OUT);
+                            Thread.Sleep(Program.config.TimeOut);
                             continue;
                         }
                         else
@@ -359,10 +400,10 @@ namespace GetIdol
                 {
                     if (i >= Program.StartPage + Program.MaxPage) { break; }
                 }
-                Thread.Sleep(TIME_OUT);
+                Thread.Sleep(Program.config.TimeOut);
                 Console.Write("({0}/ХЗ) ", imgs.Count);
                 //DateTime start = DateTime.Now;
-                string text = DownloadHTML(BaseURL, tag, i, sankaku_cookies);
+                string text = DownloadHTML(Program.config.BaseURL, tag, i, sankaku_cookies);
                 //MyWait(start, 5000);
                 if (text != null)
                 {
@@ -384,13 +425,13 @@ namespace GetIdol
             try
             {
                 HttpWebRequest loginRequest = (HttpWebRequest)WebRequest.Create(url);
-                loginRequest.UserAgent = UserAgent;
+                loginRequest.UserAgent = Program.config.UserAgent;
                 loginRequest.Accept = "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8";
                 loginRequest.ContentType = "application/x-www-form-urlencoded";
                 loginRequest.Headers.Add("Accept-Encoding: identity");
                 loginRequest.CookieContainer = new CookieContainer();
                 loginRequest.Method = "POST";
-                string PostData = String.Format("user%5Bname%5D={0}&user%5Bpassword%5D={1}", login, password);
+                string PostData = String.Format("user%5Bname%5D={0}&user%5Bpassword%5D={1}", Program.config.SankakuLogin, Program.config.SankakuPassword);
                 Encoding encoding = Encoding.UTF8;
                 byte[] byte1 = encoding.GetBytes(PostData);
                 loginRequest.ContentLength = byte1.Length;
@@ -413,7 +454,7 @@ namespace GetIdol
         static string DownloadStringFromSankaku(string url, string referer, CookieCollection cookies)
         {
             HttpWebRequest downloadRequest = (HttpWebRequest)WebRequest.Create(url);
-            downloadRequest.UserAgent = UserAgent;
+            downloadRequest.UserAgent = Program.config.UserAgent;
             downloadRequest.Accept = "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8";
             downloadRequest.Headers.Add("Accept-Encoding: identity");
             downloadRequest.Headers.Add(HttpRequestHeader.Cookie, RawCookies);
@@ -444,11 +485,11 @@ namespace GetIdol
                 catch (WebException we)
                 {
                     Console.WriteLine("Ошибка: " + we.Message);
-                    Thread.Sleep(TIME_OUT_ERROR);
+                    Thread.Sleep(Program.config.TimeOutError);
                     if (we.Response == null) { continue; }
                     if (((HttpWebResponse)we.Response).StatusCode == HttpStatusCode.ServiceUnavailable)
                     {
-                        if (count_503 < LIMIT_ERRORS)
+                        if (count_503 < Program.config.LimitErrors)
                         {
                             count_503++;
                             continue;
@@ -522,7 +563,7 @@ namespace GetIdol
             {
                 hash[i / 2] = byte.Parse(hash_string.Substring(i, 2), NumberStyles.HexNumber);
             }
-            using (SQLiteConnection connection = new SQLiteConnection(ConnectionString))
+            using (SQLiteConnection connection = new SQLiteConnection(Program.config.ConnectionString))
             {
                 connection.Open();
                 using (SQLiteCommand command = new SQLiteCommand())
@@ -547,6 +588,44 @@ namespace GetIdol
                     }
                 }
             }
+        }
+    }
+    [DataContract]
+    public class GetidolConfig
+    {
+        [DataMember]
+        public string BaseURL;
+        [DataMember]
+        public string ConnectionString;
+        [DataMember]
+        public bool UseDB;
+        [DataMember]
+        public string DownloadPath;
+        [DataMember]
+        public int LimitErrors;
+        [DataMember]
+        public int TimeOut;
+        [DataMember]
+        public int TimeOutError;
+        [DataMember]
+        public string SankakuLogin;
+        [DataMember]
+        public string SankakuPassword;
+        [DataMember]
+        public bool UseProxy;
+        [DataMember]
+        public string ProxyAddress;
+        [DataMember]
+        public int ProxyPort;
+        [DataMember]
+        public string ProxyLogin;
+        [DataMember]
+        public string ProxyPassword;
+        [DataMember]
+        public string UserAgent;
+
+        public GetidolConfig()
+        {
         }
     }
 }
