@@ -593,39 +593,35 @@ namespace GetIdol
     [DataContract]
     public class GetidolConfig
     {
-        [DataMember]
+        [DataMember(Name = "BaseURL", IsRequired = true)]
         public string BaseURL;
-        [DataMember]
+        [DataMember(Name = "ConnectionString", IsRequired = true)]
         public string ConnectionString;
-        [DataMember]
+        [DataMember(Name = "UseDB", IsRequired = true)]
         public bool UseDB;
-        [DataMember]
+        [DataMember(Name = "DownloadPath", IsRequired = true)]
         public string DownloadPath;
-        [DataMember]
+        [DataMember(Name = "LimitErrors", IsRequired = true)]
         public int LimitErrors;
-        [DataMember]
+        [DataMember(Name = "TimeOut", IsRequired = true)]
         public int TimeOut;
-        [DataMember]
+        [DataMember(Name = "TimeOutError", IsRequired = true)]
         public int TimeOutError;
-        [DataMember]
+        [DataMember(Name = "SankakuLogin", IsRequired = true)]
         public string SankakuLogin;
-        [DataMember]
+        [DataMember(Name = "SankakuPassword", IsRequired = true)]
         public string SankakuPassword;
-        [DataMember]
+        [DataMember(Name = "UseProxy", IsRequired = true)]
         public bool UseProxy;
-        [DataMember]
+        [DataMember(Name = "ProxyAddress", IsRequired = true)]
         public string ProxyAddress;
-        [DataMember]
+        [DataMember(Name = "ProxyPort", IsRequired = true)]
         public int ProxyPort;
-        [DataMember]
+        [DataMember(Name = "ProxyLogin", IsRequired = true)]
         public string ProxyLogin;
-        [DataMember]
+        [DataMember(Name = "ProxyPassword", IsRequired = true)]
         public string ProxyPassword;
-        [DataMember]
+        [DataMember(Name = "UserAgent", IsRequired = true)]
         public string UserAgent;
-
-        public GetidolConfig()
-        {
-        }
     }
 }

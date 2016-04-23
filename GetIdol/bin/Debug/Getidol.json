@@ -1,4 +1,4 @@
-﻿{
+{
 "BaseURL":"https:\/\/chan.sankakucomplex.com\/",
 "ConnectionString":"data source=C:\\utils\\erza\\erza.sqlite",
 "DownloadPath":".",
