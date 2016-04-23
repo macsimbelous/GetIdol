@@ -6,3 +6,11 @@ C:\Users\macs\Source\Repos\GetIdol\GetIdol\bin\Debug\System.Data.SQLite.dll
 C:\Users\macs\Source\Repos\GetIdol\GetIdol\bin\Debug\System.Data.SQLite.xml
 C:\Users\macs\Source\Repos\GetIdol\GetIdol\obj\Debug\GetIdol.exe
 C:\Users\macs\Source\Repos\GetIdol\GetIdol\obj\Debug\GetIdol.pdb
+C:\Users\macs\Documents\GitHubVisualStudio\GetIdol\GetIdol\bin\Debug\GetIdol.exe.config
+C:\Users\macs\Documents\GitHubVisualStudio\GetIdol\GetIdol\obj\Debug\GetIdol.exe
+C:\Users\macs\Documents\GitHubVisualStudio\GetIdol\GetIdol\obj\Debug\GetIdol.pdb
+C:\Users\macs\Documents\GitHubVisualStudio\GetIdol\GetIdol\bin\Debug\GetIdol.exe
+C:\Users\macs\Documents\GitHubVisualStudio\GetIdol\GetIdol\bin\Debug\GetIdol.pdb
+C:\Users\macs\Documents\GitHubVisualStudio\GetIdol\GetIdol\bin\Debug\System.Data.SQLite.dll
+C:\Users\macs\Documents\GitHubVisualStudio\GetIdol\GetIdol\bin\Debug\System.Data.SQLite.xml
+C:\Users\macs\Documents\GitHubVisualStudio\GetIdol\GetIdol\obj\Debug\GetIdol.csprojResolveAssemblyReference.cache

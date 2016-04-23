@@ -238,6 +238,12 @@ namespace GetIdol
             }
             Thread.Sleep(Program.config.TimeOut - 2000);
             HttpWebRequest httpWRQ = (HttpWebRequest)HttpWebRequest.Create(new Uri(url));
+            if (Program.config.UseProxy)
+            {
+                WebProxy myProxy = new WebProxy(Program.config.ProxyAddress, Program.config.ProxyPort);
+                myProxy.Credentials = new NetworkCredential(Program.config.ProxyLogin, Program.config.ProxyPassword);
+                httpWRQ.Proxy = myProxy;
+            }
             WebResponse wrp = null;
             Stream rStream = null;
             try
@@ -370,7 +376,7 @@ namespace GetIdol
                 int temp = 0;
                 for (; ; )
                 {
-                    sankaku_cookies = GetSankakuCookies("https://chan.sankakucomplex.com/user/authenticate");
+                    sankaku_cookies = GetSankakuCookies(Program.config.BaseURL + "user/authenticate");
                     if (sankaku_cookies != null)
                     {
                         break;
@@ -425,6 +431,12 @@ namespace GetIdol
             try
             {
                 HttpWebRequest loginRequest = (HttpWebRequest)WebRequest.Create(url);
+                if (Program.config.UseProxy)
+                {
+                    WebProxy myProxy = new WebProxy(Program.config.ProxyAddress, Program.config.ProxyPort);
+                    myProxy.Credentials = new NetworkCredential(Program.config.ProxyLogin, Program.config.ProxyPassword);
+                    loginRequest.Proxy = myProxy;
+                }
                 loginRequest.UserAgent = Program.config.UserAgent;
                 loginRequest.Accept = "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8";
                 loginRequest.ContentType = "application/x-www-form-urlencoded";
@@ -454,6 +466,12 @@ namespace GetIdol
         static string DownloadStringFromSankaku(string url, string referer, CookieCollection cookies)
         {
             HttpWebRequest downloadRequest = (HttpWebRequest)WebRequest.Create(url);
+            if (Program.config.UseProxy)
+            {
+                WebProxy myProxy = new WebProxy(Program.config.ProxyAddress, Program.config.ProxyPort);
+                myProxy.Credentials = new NetworkCredential(Program.config.ProxyLogin, Program.config.ProxyPassword);
+                downloadRequest.Proxy = myProxy;
+            }
             downloadRequest.UserAgent = Program.config.UserAgent;
             downloadRequest.Accept = "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8";
             downloadRequest.Headers.Add("Accept-Encoding: identity");
