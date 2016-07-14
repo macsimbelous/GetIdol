@@ -608,6 +608,96 @@ namespace GetIdol
                 }
             }
         }
+        static void GetTagsFromSankaku(string md5, string post, string dir)
+        {
+            try
+            {
+                List<string> tags = new List<string>();
+                string tags_string = null;
+                Regex rx = new Regex("<input id=post_old_tags name=\"post\\[old_tags\\]\" type=hidden value=\"(.+)\">");
+                Match match = rx.Match(post);
+                if (match.Success)
+                {
+                    string temp = match.Value.Substring(("<input id=post_old_tags name=\"post\\[old_tags\\]\" type=hidden value=\"").Length);
+                    temp = temp.Substring(0, temp.Length - 2);
+                    tags.AddRange(temp.Split(' '));
+                }
+                else
+                {
+                    return;
+                }
+                if(tags.Count <= 0) { return; }
+                using (SQLiteConnection connection = new SQLiteConnection(Program.config.ConnectionString))
+                {
+                    using (SQLiteCommand command = new SQLiteCommand())
+                    {
+                        command.CommandText = "select * from hash_tags where hash = @hash";
+                        command.Parameters.AddWithValue("hash", md5);
+                        command.Connection = connection;
+                        SQLiteDataReader reader = command.ExecuteReader();
+                        if (reader.Read())
+                        {
+                            ulong id;
+                            if (System.Convert.ToBoolean(reader["is_deleted"]))
+                            {
+                                reader.Close();
+                                return;
+                            }
+                            else
+                            {
+                                if (!Convert.IsDBNull(reader["tags"]))
+                                {
+                                    string temp = System.Convert.ToString(reader["tags"]);
+                                    tags.AddRange(temp.Split(' '));
+                                    tags = tags.Distinct().ToList();
+                                    StringBuilder sb = new StringBuilder();
+                                    for (int i = 0; i < tags.Count; i++)
+                                    {
+                                        if (i == 0)
+                                        {
+                                            sb.Append(tags[i]);
+                                        }
+                                        else
+                                        {
+                                            sb.Append(' ');
+                                            sb.Append(tags[i]);
+                                        }
+                                    }
+                                    tags_string = sb.ToString();
+                                }
+                                id = System.Convert.ToUInt64(reader["id"]);
+                                reader.Close();
+                            }
+                            using (SQLiteCommand update_command = new SQLiteCommand(connection))
+                            {
+                                update_command.CommandText = "UPDATE hash_tags SET tags = @tags WHERE id = @id";
+                                update_command.Parameters.AddWithValue("id", id);
+                                update_command.Parameters.AddWithValue("tags", tags_string);
+                                update_command.ExecuteNonQuery();
+                            }
+                        }
+                        else
+                        {
+                            using (SQLiteCommand insert_command = new SQLiteCommand(connection))
+                            {
+                                insert_command.CommandText = "insert into hash_tags (hash, tags, is_new, is_deleted) values (@hash, @tags, @is_new, @is_deleted)";
+                                insert_command.Parameters.AddWithValue("hash", md5);
+                                insert_command.Parameters.AddWithValue("tags", tags_string);
+                                insert_command.Parameters.AddWithValue("is_new", true);
+                                insert_command.Parameters.AddWithValue("is_deleted", false);
+                                insert_command.ExecuteNonQuery();
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                Thread.Sleep(60000);
+                return;
+            }
+            return;
+        }
     }
     [DataContract]
     public class GetidolConfig
