@@ -223,7 +223,7 @@ namespace GetIdol
                 Console.WriteLine("URL Картинки не получен!");
                 return false;
             }
-            GetTagsFromSankaku(Path.GetFileNameWithoutExtension(url), post);
+            //GetTagsFromSankaku(Path.GetFileNameWithoutExtension(url), post);
             string filename = GetFileName(dir, url);
             if (ExistImage(Path.GetFileNameWithoutExtension(url)))
             {
