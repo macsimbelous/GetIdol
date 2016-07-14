@@ -223,6 +223,7 @@ namespace GetIdol
                 Console.WriteLine("URL Картинки не получен!");
                 return false;
             }
+            GetTagsFromSankaku(Path.GetFileNameWithoutExtension(url), post);
             string filename = GetFileName(dir, url);
             if (ExistImage(Path.GetFileNameWithoutExtension(url)))
             {
@@ -608,7 +609,7 @@ namespace GetIdol
                 }
             }
         }
-        static void GetTagsFromSankaku(string md5, string post, string dir)
+        static void GetTagsFromSankaku(string md5, string post)
         {
             try
             {
