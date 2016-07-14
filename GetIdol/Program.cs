@@ -143,6 +143,7 @@ namespace GetIdol
                 }
                 return;
             }
+            Console.WriteLine("Конфигурационный файл не найден!\nЗагружены настройки по умолчанью.");
         }
         static void ParseArgs(string[] args)
         {
