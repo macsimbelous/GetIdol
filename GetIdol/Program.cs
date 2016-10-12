@@ -147,8 +147,8 @@ namespace GetIdol
         }
         static void ParseArgs(string[] args)
         {
-            string start_page_string = "--start_page=";
-            string max_page_string = "--max_page=";
+            string start_page_string = "--start-page=";
+            string max_page_string = "--max-page=";
             string nosqlite_string = "--nosqlite";
             string sqlite_path_string = "--sqlite-path=";
             Program.Tags = new List<string>();
