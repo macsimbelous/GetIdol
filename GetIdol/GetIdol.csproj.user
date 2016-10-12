@@ -4,4 +4,7 @@
     <StartWorkingDirectory>C:\Users\macs\Documents\GitHubVisualStudio\GetIdol\GetIdol\bin\Debug\</StartWorkingDirectory>
     <StartArguments>test</StartArguments>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
+    <StartArguments>test</StartArguments>
+  </PropertyGroup>
 </Project>

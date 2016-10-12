@@ -230,14 +230,15 @@ namespace GetIdol
                 Console.WriteLine("Уже скачан.");
                 return true;
             }
+            GetTagsFromSankaku(Path.GetFileNameWithoutExtension(url), post);
             Console.WriteLine("Начинаем закачку {0}.", url);
             FileInfo fi = new FileInfo(filename);
             //ВРЕМЕННО!!!!!!!!
-            if (fi.Exists)
-            {
-                Console.WriteLine("Уже скачан.");
-                return true;
-            }
+            //if (fi.Exists)
+            //{
+                //Console.WriteLine("Уже скачан.");
+                //return true;
+            //}
             Thread.Sleep(Program.config.TimeOut - 2000);
             HttpWebRequest httpWRQ = (HttpWebRequest)HttpWebRequest.Create(new Uri(url));
             if (Program.config.UseProxy)
@@ -692,9 +693,10 @@ namespace GetIdol
                     }
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                Thread.Sleep(60000);
+                //Thread.Sleep(60000);
+                Console.WriteLine(ex.Message);
                 return;
             }
             return;
