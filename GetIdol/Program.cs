@@ -631,6 +631,7 @@ namespace GetIdol
                 if(tags.Count <= 0) { return; }
                 using (SQLiteConnection connection = new SQLiteConnection(Program.config.ConnectionString))
                 {
+                    connection.Open();
                     using (SQLiteCommand command = new SQLiteCommand())
                     {
                         command.CommandText = "select * from hash_tags where hash = @hash";
