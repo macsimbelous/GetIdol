@@ -99,6 +99,7 @@ namespace GetIdol
                 }
             }
             Console.WriteLine("Успешно скачано: {0}\nСкачано ренее: {1}\nУдалено ранее: {2}\nОшибочно: {3}\nВсего: {4}", count_complit, count_skip, count_deleted, count_error, post_ids.Count);
+            connection.Close();
             return;
         }
         static void LoadSettings()
