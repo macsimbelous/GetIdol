@@ -40,6 +40,7 @@ namespace GetIdol
         static int MaxPage = -1;
         static List<string> Tags = null;
         static GetidolConfig config = null;
+        static SQLiteConnection connection = null;
         static void Main(string[] args)
         {
             LoadSettings();
@@ -75,6 +76,8 @@ namespace GetIdol
             int count_deleted = 0;
             int count_error = 0;
             int count_skip = 0;
+            connection = new SQLiteConnection(Program.config.ConnectionString);
+            connection.Open();
             Directory.CreateDirectory(".\\" + tags.ToString());
             for (int i = 0; i < post_ids.Count; i++)
             {
@@ -584,20 +587,26 @@ namespace GetIdol
             {
                 hash[i / 2] = byte.Parse(hash_string.Substring(i, 2), NumberStyles.HexNumber);
             }
-            using (SQLiteConnection connection = new SQLiteConnection(Program.config.ConnectionString))
-            {
-                connection.Open();
+            //using (SQLiteConnection connection = new SQLiteConnection(Program.config.ConnectionString))
+            //{
+                //connection.Open();
                 using (SQLiteCommand command = new SQLiteCommand())
                 {
                     command.CommandText = "select * from hash_tags where hash = @hash";
                     command.Parameters.AddWithValue("hash", hash);
                     command.Connection = connection;
-                    SQLiteDataReader reader = command.ExecuteReader();
+                using (SQLiteDataReader reader = command.ExecuteReader())
+                {
                     if (reader.Read())
                     {
-                        if (System.Convert.ToBoolean(reader["is_deleted"])) { return true; }
+                        if (System.Convert.ToBoolean(reader["is_deleted"]))
+                        {
+                            reader.Close();
+                            return true;
+                        }
                         if (Convert.IsDBNull(reader["file_name"]))
                         {
+                            reader.Close();
                             return false;
                         }
                         reader.Close();
@@ -605,10 +614,12 @@ namespace GetIdol
                     }
                     else
                     {
+                        reader.Close();
                         return false;
                     }
                 }
-            }
+                }
+            //}
         }
         static void GetTagsFromSankaku(string md5, string post)
         {
@@ -629,70 +640,71 @@ namespace GetIdol
                     return;
                 }
                 if(tags.Count <= 0) { return; }
-                using (SQLiteConnection connection = new SQLiteConnection(Program.config.ConnectionString))
+                //using (SQLiteConnection connection = new SQLiteConnection(Program.config.ConnectionString))
+                //{
+                //connection.Open();
+                using (SQLiteCommand command = new SQLiteCommand())
                 {
-                    connection.Open();
-                    using (SQLiteCommand command = new SQLiteCommand())
+                    command.CommandText = "select * from hash_tags where hash = @hash";
+                    command.Parameters.AddWithValue("hash", md5);
+                    command.Connection = connection;
+                    using (SQLiteDataReader reader = command.ExecuteReader()) { 
+                    if (reader.Read())
                     {
-                        command.CommandText = "select * from hash_tags where hash = @hash";
-                        command.Parameters.AddWithValue("hash", md5);
-                        command.Connection = connection;
-                        SQLiteDataReader reader = command.ExecuteReader();
-                        if (reader.Read())
+                        ulong id;
+                        if (System.Convert.ToBoolean(reader["is_deleted"]))
                         {
-                            ulong id;
-                            if (System.Convert.ToBoolean(reader["is_deleted"]))
-                            {
-                                reader.Close();
-                                return;
-                            }
-                            else
-                            {
-                                if (!Convert.IsDBNull(reader["tags"]))
-                                {
-                                    string temp = System.Convert.ToString(reader["tags"]);
-                                    tags.AddRange(temp.Split(' '));
-                                    tags = tags.Distinct().ToList();
-                                    StringBuilder sb = new StringBuilder();
-                                    for (int i = 0; i < tags.Count; i++)
-                                    {
-                                        if (i == 0)
-                                        {
-                                            sb.Append(tags[i]);
-                                        }
-                                        else
-                                        {
-                                            sb.Append(' ');
-                                            sb.Append(tags[i]);
-                                        }
-                                    }
-                                    tags_string = sb.ToString();
-                                }
-                                id = System.Convert.ToUInt64(reader["id"]);
-                                reader.Close();
-                            }
-                            using (SQLiteCommand update_command = new SQLiteCommand(connection))
-                            {
-                                update_command.CommandText = "UPDATE hash_tags SET tags = @tags WHERE id = @id";
-                                update_command.Parameters.AddWithValue("id", id);
-                                update_command.Parameters.AddWithValue("tags", tags_string);
-                                update_command.ExecuteNonQuery();
-                            }
+                            reader.Close();
+                            return;
                         }
                         else
                         {
-                            using (SQLiteCommand insert_command = new SQLiteCommand(connection))
+                            if (!Convert.IsDBNull(reader["tags"]))
                             {
-                                insert_command.CommandText = "insert into hash_tags (hash, tags, is_new, is_deleted) values (@hash, @tags, @is_new, @is_deleted)";
-                                insert_command.Parameters.AddWithValue("hash", md5);
-                                insert_command.Parameters.AddWithValue("tags", tags_string);
-                                insert_command.Parameters.AddWithValue("is_new", true);
-                                insert_command.Parameters.AddWithValue("is_deleted", false);
-                                insert_command.ExecuteNonQuery();
+                                string temp = System.Convert.ToString(reader["tags"]);
+                                tags.AddRange(temp.Split(' '));
+                                tags = tags.Distinct().ToList();
+                                StringBuilder sb = new StringBuilder();
+                                for (int i = 0; i < tags.Count; i++)
+                                {
+                                    if (i == 0)
+                                    {
+                                        sb.Append(tags[i]);
+                                    }
+                                    else
+                                    {
+                                        sb.Append(' ');
+                                        sb.Append(tags[i]);
+                                    }
+                                }
+                                tags_string = sb.ToString();
                             }
+                            id = System.Convert.ToUInt64(reader["id"]);
+                            reader.Close();
+                        }
+                        using (SQLiteCommand update_command = new SQLiteCommand(connection))
+                        {
+                            update_command.CommandText = "UPDATE hash_tags SET tags = @tags WHERE id = @id";
+                            update_command.Parameters.AddWithValue("id", id);
+                            update_command.Parameters.AddWithValue("tags", tags_string);
+                            update_command.ExecuteNonQuery();
+                        }
+                    }
+                    else
+                    {
+                        using (SQLiteCommand insert_command = new SQLiteCommand(connection))
+                        {
+                            insert_command.CommandText = "insert into hash_tags (hash, tags, is_new, is_deleted) values (@hash, @tags, @is_new, @is_deleted)";
+                            insert_command.Parameters.AddWithValue("hash", md5);
+                            insert_command.Parameters.AddWithValue("tags", tags_string);
+                            insert_command.Parameters.AddWithValue("is_new", true);
+                            insert_command.Parameters.AddWithValue("is_deleted", false);
+                            insert_command.ExecuteNonQuery();
                         }
                     }
                 }
+                    }
+                //}
             }
             catch (Exception ex)
             {
