@@ -41,6 +41,11 @@ namespace GetIdol
         static List<string> Tags = null;
         static GetidolConfig config = null;
         static SQLiteConnection connection = null;
+        static int count_complit = 0;
+        static int count_deleted = 0;
+        static int count_error = 0;
+        static int count_skip = 0;
+        static string store_file = null;
         static void Main(string[] args)
         {
             LoadSettings();
@@ -72,10 +77,7 @@ namespace GetIdol
             Console.WriteLine("Импортируем тег " + tags.ToString() + " с санкаки");
             List<int> post_ids = GetImageInfoFromSankaku(tags.ToString());
             Console.Write("\n\n\n\t\tНАЧИНАЕТСЯ ЗАГРУЗКА\n\n\n");
-            int count_complit = 0;
-            int count_deleted = 0;
-            int count_error = 0;
-            int count_skip = 0;
+
             connection = new SQLiteConnection(Program.config.ConnectionString);
             connection.Open();
             Directory.CreateDirectory(".\\" + tags.ToString());
@@ -88,11 +90,11 @@ namespace GetIdol
                     if (DownloadImageFromSankaku(post_ids[i], ".\\" + tags.ToString(), sankaku_cookies))
                     {
                         //MyWait(start, 5000);
-                        count_complit++;
+                        //count_complit++;
                         break;
                     }
                     //MyWait(start, 7000);
-                    if (index == Program.config.LimitErrors - 1)
+                    if (index == 0)
                     {
                         count_error++;
                     }
@@ -231,7 +233,8 @@ namespace GetIdol
             string filename = GetFileName(dir, url);
             if (ExistImage(Path.GetFileNameWithoutExtension(url)))
             {
-                Console.WriteLine("Уже скачан.");
+                Console.WriteLine("Уже скачан: {0}", store_file);
+                count_skip++;
                 return true;
             }
             GetTagsFromSankaku(Path.GetFileNameWithoutExtension(url), post);
@@ -268,7 +271,8 @@ namespace GetIdol
                 {
                     if (wrp.ContentLength == fi.Length)
                     {
-                        Console.WriteLine("Уже скачан.");
+                        Console.WriteLine("Уже скачан: {0}", filename);
+                        count_skip++;
                         //wrp.Close();
                         return true;
                     }
@@ -301,6 +305,7 @@ namespace GetIdol
                 else
                 {
                     Console.WriteLine("\nЗакачка завершена.");
+                    count_complit++;
                     return true;
                 }
             }
@@ -603,6 +608,8 @@ namespace GetIdol
                         if (System.Convert.ToBoolean(reader["is_deleted"]))
                         {
                             reader.Close();
+                            count_deleted++;
+                            store_file = "Удалён!";
                             return true;
                         }
                         if (Convert.IsDBNull(reader["file_name"]))
@@ -611,6 +618,8 @@ namespace GetIdol
                             return false;
                         }
                         reader.Close();
+                        count_skip++;
+                        store_file = System.Convert.ToString(reader["file_name"]);
                         return true;
                     }
                     else
