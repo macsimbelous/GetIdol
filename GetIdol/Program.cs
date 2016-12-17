@@ -617,9 +617,9 @@ namespace GetIdol
                             reader.Close();
                             return false;
                         }
+                        store_file = System.Convert.ToString(reader["file_name"]);
                         reader.Close();
                         count_skip++;
-                        store_file = System.Convert.ToString(reader["file_name"]);
                         return true;
                     }
                     else
