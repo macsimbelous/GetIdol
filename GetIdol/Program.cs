@@ -231,13 +231,13 @@ namespace GetIdol
             }
             //GetTagsFromSankaku(Path.GetFileNameWithoutExtension(url), post);
             string filename = GetFileName(dir, url);
+            GetTagsFromSankaku(Path.GetFileNameWithoutExtension(url), post);
             if (ExistImage(Path.GetFileNameWithoutExtension(url)))
             {
                 Console.WriteLine("Уже скачан: {0}", store_file);
                 count_skip++;
                 return true;
             }
-            GetTagsFromSankaku(Path.GetFileNameWithoutExtension(url), post);
             Console.WriteLine("Начинаем закачку {0}.", url);
             FileInfo fi = new FileInfo(filename);
             //ВРЕМЕННО!!!!!!!!
