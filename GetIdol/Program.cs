@@ -235,7 +235,7 @@ namespace GetIdol
             if (ExistImage(Path.GetFileNameWithoutExtension(url)))
             {
                 Console.WriteLine("Уже скачан: {0}", store_file);
-                count_skip++;
+                //count_skip++;
                 return true;
             }
             Console.WriteLine("Начинаем закачку {0}.", url);
