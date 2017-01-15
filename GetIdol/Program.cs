@@ -333,13 +333,14 @@ namespace GetIdol
         }
         static string GetPostPage(int npost, CookieCollection cookies)
         {
+            Random rnd = new Random();
             string strURL = Program.config.BaseURL + "post/show/" + npost.ToString();
             Console.WriteLine("Загружаем и парсим пост: " + strURL);
             while (true)
             {
                 try
                 {
-                    return DownloadStringFromSankaku(strURL, null, cookies);
+                    return DownloadStringFromSankaku(strURL, Program.config.BaseURL + "post/show/" + rnd.Next(10000, 50000), cookies);
                 }
                 catch (WebException we)
                 {
@@ -410,8 +411,32 @@ namespace GetIdol
                 }
             }
             List<int> imgs = new List<int>();
-            //int i = 1;
-            int i = Program.StartPage;
+
+            string url = String.Format("{0}?tags={1}", Program.config.BaseURL, tag);
+            string prev_url = Program.config.BaseURL;
+            while (true)
+            {
+                Thread.Sleep(Program.config.TimeOut);
+                Console.WriteLine("({0}) Загружаем и парсим: {1}", imgs.Count, url);
+                string text;
+                try
+                {
+                    text = DownloadStringFromSankaku(url, prev_url, sankaku_cookies);
+                }
+                catch (WebException we)
+                {
+                    Console.WriteLine("Ошибка: " + we.Message);
+                    break;
+                }
+                imgs.AddRange(ParseHTML_sankaku(text));
+                prev_url = url;
+                url = GetNextPage(text);
+                if (url == null)
+                {
+                    break;
+                }
+            }
+            /*int i = Program.StartPage;
             while (true)
             {
                 if (Program.MaxPage >= 0)
@@ -435,8 +460,22 @@ namespace GetIdol
                     else break;
                 }
                 else break;
-            }
+            }*/
             return imgs;
+        }
+        static string GetNextPage(string text)
+        {
+            Regex next_page = new Regex("next-page-url=\".*?\"", RegexOptions.Compiled);
+            Match match = next_page.Match(text);
+            if (match.Success)
+            {
+                string temp = match.Value;
+                temp = temp.Replace("next-page-url=\"", String.Empty);
+                temp = temp.Replace("amp;", String.Empty);
+                temp = Program.config.BaseURL + temp.Substring(1, temp.Length - 2);
+                return temp;
+            }
+            else return null;
         }
         static CookieCollection GetSankakuCookies(string url)
         {
