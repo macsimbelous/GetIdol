@@ -37,7 +37,7 @@ namespace GetIdol
         static CookieCollection sankaku_cookies = null;
         static string RawCookies = null;
         static int StartPage = 1;
-        static int MaxPage = -1;
+        static int MaxPage = 0;
         static List<string> Tags = null;
         static GetidolConfig config = null;
         static SQLiteConnection connection = null;
@@ -414,26 +414,45 @@ namespace GetIdol
 
             string url = String.Format("{0}?tags={1}", Program.config.BaseURL, tag);
             string prev_url = Program.config.BaseURL;
+            int error = 0;
+            int page_count = 1;
             while (true)
             {
-                Thread.Sleep(Program.config.TimeOut);
-                Console.WriteLine("({0}) Загружаем и парсим: {1}", imgs.Count, url);
-                string text;
                 try
                 {
-                    text = DownloadStringFromSankaku(url, prev_url, sankaku_cookies);
+                    if (page_count == StartPage + MaxPage)
+                    {
+                        break;
+                    }
+                    Thread.Sleep(Program.config.TimeOut);
+                    Console.WriteLine("({0}) Загружаем и парсим: {1}", imgs.Count, url);
+                    string text = DownloadStringFromSankaku(url, prev_url, sankaku_cookies);
+                    if (page_count >= StartPage)
+                    {
+                        imgs.AddRange(ParseHTML_sankaku(text));
+                    }
+                    else
+                    {
+                        Console.WriteLine("Страница пропущена.");
+                    }
+                    page_count++;
+                    error = 0;
+                    prev_url = url;
+                    url = GetNextPage(text);
+                    if (url == null)
+                    {
+                        break;
+                    }
                 }
                 catch (WebException we)
                 {
                     Console.WriteLine("Ошибка: " + we.Message);
-                    break;
-                }
-                imgs.AddRange(ParseHTML_sankaku(text));
-                prev_url = url;
-                url = GetNextPage(text);
-                if (url == null)
-                {
-                    break;
+                    error++;
+                    if (error >= Program.config.LimitErrors)
+                    {
+                        Console.WriteLine("Достигнут лимит ошибок!\nПрекращаю работу!");
+                        Environment.Exit(1);
+                    }
                 }
             }
             /*int i = Program.StartPage;
