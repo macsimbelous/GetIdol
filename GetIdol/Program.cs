@@ -453,6 +453,8 @@ namespace GetIdol
                         Console.WriteLine("Достигнут лимит ошибок!\nПрекращаю работу!");
                         Environment.Exit(1);
                     }
+                    Console.WriteLine("Таймаут {0} секунд", Program.config.TimeOutError / 1000);
+                    Thread.Sleep(Program.config.TimeOutError);
                 }
             }
             /*int i = Program.StartPage;
