@@ -420,8 +420,9 @@ namespace GetIdol
             {
                 try
                 {
-                    if (page_count == StartPage + MaxPage)
+                    if ((MaxPage > 0) && (page_count == StartPage + MaxPage))
                     {
+                        Console.WriteLine("Достигнут лимит страниц.");
                         break;
                     }
                     Thread.Sleep(Program.config.TimeOut);
@@ -441,6 +442,7 @@ namespace GetIdol
                     url = GetNextPage(text);
                     if (url == null)
                     {
+                        Console.WriteLine("Все страницы получены.");
                         break;
                     }
                 }
