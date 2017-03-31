@@ -29,6 +29,7 @@ using System.Globalization;
 using System.Data.SQLite;
 using System.Runtime.Serialization.Json;
 using System.Runtime.Serialization;
+using ErzaLib;
 
 namespace GetIdol
 {
@@ -719,7 +720,7 @@ namespace GetIdol
                 {
                     command.CommandText = "select * from hash_tags where hash = @hash";
                     command.Parameters.AddWithValue("hash", md5);
-                    command.Connection = connection;
+                    command.Connection = Program.connection;
                     using (SQLiteDataReader reader = command.ExecuteReader()) { 
                     if (reader.Read())
                     {
@@ -754,7 +755,7 @@ namespace GetIdol
                             id = System.Convert.ToUInt64(reader["id"]);
                             reader.Close();
                         }
-                        using (SQLiteCommand update_command = new SQLiteCommand(connection))
+                        using (SQLiteCommand update_command = new SQLiteCommand(Program.connection))
                         {
                             update_command.CommandText = "UPDATE hash_tags SET tags = @tags WHERE id = @id";
                             update_command.Parameters.AddWithValue("id", id);
@@ -764,7 +765,7 @@ namespace GetIdol
                     }
                     else
                     {
-                        using (SQLiteCommand insert_command = new SQLiteCommand(connection))
+                        using (SQLiteCommand insert_command = new SQLiteCommand(Program.connection))
                         {
                             insert_command.CommandText = "insert into hash_tags (hash, tags, is_new, is_deleted) values (@hash, @tags, @is_new, @is_deleted)";
                             insert_command.Parameters.AddWithValue("hash", md5);
@@ -777,6 +778,16 @@ namespace GetIdol
                 }
                     }
                 //}
+                ImageInfo img = new ImageInfo();
+                img.Hash = md5;
+                img.Tags.AddRange(tags);
+                img.IsDeleted = false;
+                SQLiteConnection connection = new SQLiteConnection(@"data source=C:\temp\erza.sqlite");
+                connection.Open();
+                SQLiteTransaction transact = connection.BeginTransaction();
+                ErzaDB.LoadImageToErza(img, connection);
+                transact.Commit();
+                connection.Close();
             }
             catch (Exception ex)
             {
