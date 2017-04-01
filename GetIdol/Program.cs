@@ -42,6 +42,7 @@ namespace GetIdol
         static List<string> Tags = null;
         static GetidolConfig config = null;
         static SQLiteConnection connection = null;
+        static SQLiteConnection connection2 = null;
         static int count_complit = 0;
         static int count_deleted = 0;
         static int count_error = 0;
@@ -237,7 +238,7 @@ namespace GetIdol
                 DateTime start_db = DateTime.Now;
                 GetTagsFromSankaku(Path.GetFileNameWithoutExtension(url), post);
                 DateTime stop_db = DateTime.Now;
-                Console.WriteLine("OK {0}", (stop_db - start_db).TotalSeconds);
+                Console.WriteLine("{0} секунд", (stop_db - start_db).TotalSeconds);
             }
             if (ExistImage(Path.GetFileNameWithoutExtension(url)))
             {
@@ -799,6 +800,7 @@ namespace GetIdol
             {
                 //Thread.Sleep(60000);
                 Console.WriteLine(ex.Message);
+                Console.WriteLine(ex.StackTrace);
                 return;
             }
             return;
