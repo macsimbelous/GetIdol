@@ -230,9 +230,15 @@ namespace GetIdol
                 Console.WriteLine("URL Картинки не получен!");
                 return false;
             }
-            //GetTagsFromSankaku(Path.GetFileNameWithoutExtension(url), post);
             string filename = GetFileName(dir, url);
-            GetTagsFromSankaku(Path.GetFileNameWithoutExtension(url), post);
+            if (IsImageFile(filename))
+            {
+                Console.Write("Добавляем информацию в базу данных...");
+                DateTime start_db = DateTime.Now;
+                GetTagsFromSankaku(Path.GetFileNameWithoutExtension(url), post);
+                DateTime stop_db = DateTime.Now;
+                Console.WriteLine("OK {0}", (stop_db - start_db).TotalSeconds);
+            }
             if (ExistImage(Path.GetFileNameWithoutExtension(url)))
             {
                 Console.WriteLine("Уже скачан: {0}", store_file);
@@ -719,7 +725,7 @@ namespace GetIdol
                 using (SQLiteCommand command = new SQLiteCommand())
                 {
                     command.CommandText = "select * from hash_tags where hash = @hash";
-                    command.Parameters.AddWithValue("hash", md5);
+                    command.Parameters.AddWithValue("hash", SetHashString(md5));
                     command.Connection = Program.connection;
                     using (SQLiteDataReader reader = command.ExecuteReader()) { 
                     if (reader.Read())
@@ -768,7 +774,7 @@ namespace GetIdol
                         using (SQLiteCommand insert_command = new SQLiteCommand(Program.connection))
                         {
                             insert_command.CommandText = "insert into hash_tags (hash, tags, is_new, is_deleted) values (@hash, @tags, @is_new, @is_deleted)";
-                            insert_command.Parameters.AddWithValue("hash", md5);
+                            insert_command.Parameters.AddWithValue("hash", SetHashString(md5));
                             insert_command.Parameters.AddWithValue("tags", tags_string);
                             insert_command.Parameters.AddWithValue("is_new", true);
                             insert_command.Parameters.AddWithValue("is_deleted", false);
@@ -796,6 +802,37 @@ namespace GetIdol
                 return;
             }
             return;
+        }
+        static byte[] SetHashString(string hash_string)
+        {
+            byte[] result = new byte[hash_string.Length / 2];
+            for (int i = 0; i < hash_string.Length; i += 2)
+            {
+                result[i / 2] = byte.Parse(hash_string.Substring(i, 2), NumberStyles.HexNumber);
+            }
+            return result;
+        }
+        static bool IsImageFile(string FilePath)
+        {
+            string ext = Path.GetExtension(FilePath);
+            switch (ext)
+            {
+                case ".jpg":
+                    return true;
+                case ".jpeg":
+                    return true;
+                case ".png":
+                    return true;
+                case ".bmp":
+                    return true;
+                case ".gif":
+                    return true;
+                case ".tif":
+                    return true;
+                case ".tiff":
+                    return true;
+            }
+            return false;
         }
     }
     [DataContract]
