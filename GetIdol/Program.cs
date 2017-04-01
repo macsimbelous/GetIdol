@@ -82,6 +82,8 @@ namespace GetIdol
 
             connection = new SQLiteConnection(Program.config.ConnectionString);
             connection.Open();
+            connection2 = new SQLiteConnection(@"data source=C:\temp\erza.sqlite");
+            connection2.Open();
             Directory.CreateDirectory(".\\" + tags.ToString());
             for (int i = 0; i < post_ids.Count; i++)
             {
@@ -104,6 +106,7 @@ namespace GetIdol
             }
             Console.WriteLine("Успешно скачано: {0}\nСкачано ренее: {1}\nУдалено ранее: {2}\nОшибочно: {3}\nВсего: {4}", count_complit, count_skip, count_deleted, count_error, post_ids.Count);
             connection.Close();
+            connection2.Close();
             return;
         }
         static void LoadSettings()
@@ -789,12 +792,9 @@ namespace GetIdol
                 img.Hash = md5;
                 img.Tags.AddRange(tags);
                 img.IsDeleted = false;
-                SQLiteConnection connection = new SQLiteConnection(@"data source=C:\temp\erza.sqlite");
-                connection.Open();
-                SQLiteTransaction transact = connection.BeginTransaction();
-                ErzaDB.LoadImageToErza(img, connection);
+                SQLiteTransaction transact = Program.connection2.BeginTransaction();
+                ErzaDB.LoadImageToErza(img, Program.connection2);
                 transact.Commit();
-                connection.Close();
             }
             catch (Exception ex)
             {
