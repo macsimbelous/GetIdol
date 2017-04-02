@@ -105,13 +105,13 @@ namespace ErzaLib
                 }
                 else
                 {
-                    return System.Convert.ToInt64(o);
+                    return Convert.ToInt64(o);
                 }
             }
         }
         public static ImageInfo GetImageWithOutTags(string Hash, SQLiteConnection Connection)
         {
-            string sql = "SELECT image_id, hash, is_deleted, file_path FROM images WHERE hash = @hash";
+            string sql = "SELECT image_id, hash, is_deleted, file_path, width, height FROM images WHERE hash = @hash";
             using (SQLiteCommand command = new SQLiteCommand(sql, Connection))
             {
                 command.Parameters.AddWithValue("hash", Hash);
@@ -121,10 +121,13 @@ namespace ErzaLib
                     ImageInfo image = new ImageInfo();
                     image.ImageID = (long)reader["image_id"];
                     image.Hash = (string)reader["hash"];
-                    image.IsDeleted = (bool)reader["is_deleted"];
-                    if (!Convert.IsDBNull(reader["file_path"]))
+                    image.IsDeleted = Convert.ToBoolean(reader["is_deleted"]);
+                    image.Width = Convert.ToInt32(reader["width"]);
+                    image.Height = Convert.ToInt32(reader["height"]);
+                    object o = reader["file_path"];
+                    if (o != DBNull.Value)
                     {
-                        image.FilePath = (string)reader["file_path"];
+                        image.FilePath = (string)o;
                     }
                     reader.Close();
                     return image;
